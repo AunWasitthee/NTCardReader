@@ -167,7 +167,7 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
 //            }
 //        });
 
-
+//////////////////
         /*------------------- Photo--------------------------------------------------*/
         BSelectPhoto=(Button)findViewById(R.id.BSelectPhoto);
         viewImage=(ImageView)findViewById(R.id.viewImage);
