@@ -19,6 +19,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -86,6 +87,7 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
     private Double latitude;
     private Double longitude;
     private People people;
+    private ContactData contactData;
     private AddressData addressData;
     private EditText EHouseNumber, EMoo,ESoi,ERoad,EPostcode,ELandmark,EPhotourl;
     private Spinner mProvince,mAmphur,mTambon;
@@ -117,6 +119,7 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
 /*------------------- intent ข้อมูล --------------------------------------------------------------------------------------------------*/
         Intent intent = getIntent();
         people = (People) intent.getExtras().getSerializable("data");
+        contactData = (ContactData) intent.getExtras().getSerializable("contactData");
 
         Log.d(people.getProfileData().getPrefixThai(), "LocationCard: ");
         Log.d(people.getProfileData().getFirstNameThai(), "LocationCard: ");
@@ -484,7 +487,6 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
                 Intent intent = new Intent(LocationCard.this, LocationMap.class);
                 //intent.putExtra("data", cardFirebase);
                 startActivityForResult(intent, REQUEST_ADDRESS);
-
                 break;
 
             case R.id.Next:
@@ -520,10 +522,12 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
                 //Log.d(people.getAddressCard().getLongitude().toString(), "LocationCard: ");
                 //uploadFromFile(uri.getPath());
                 intent2.putExtra("data", people);
+                intent2.putExtra("contactData",contactData);
 
                 intent2.putExtra("PathImgLocationCard",PathImgLocationCard);
 
                 startActivity(intent2);
+                finish();
 
                 break;
             case R.id.BSelectPhoto:
@@ -531,6 +535,48 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
                 break;
 
         }
+    }
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent2 = new Intent(LocationCard.this, Profile.class);
+        //intent.putExtra("data", cardFirebase);
+
+        addressData.setHouseNumber(EHouseNumber.getText().toString());
+        addressData.setMoo(EMoo.getText().toString());
+        addressData.setSoi(ESoi.getText().toString());
+        addressData.setRoad(ERoad.getText().toString());
+
+        addressData.setProvince(mProvince.getSelectedItem().toString());
+        addressData.setAmphur(mAmphur.getSelectedItem().toString());
+        addressData.setTambon(mTambon.getSelectedItem().toString());
+
+        addressData.setPostcode(EPostcode.getText().toString());
+
+        addressData.setLandmark(ELandmark.getText().toString());
+        addressData.setLatitude(latitude);
+        addressData.setLongitude(longitude);
+        people.setAddressCard(addressData);
+        //Convert to byte array
+
+
+
+//        Log.d(people.getAddressCard().getHouseNumber(), "LocationCard: ");
+//        Log.d(people.getAddressCard().getMoo(), "LocationCard: ");
+//        Log.d(people.getAddressCard().getSoi(), "LocationCard: ");
+//        Log.d(people.getAddressCard().getRoad(), "LocationCard: ");
+//        Log.d(people.getAddressCard().getPostcode(), "LocationCard: ");
+//        Log.d(people.getAddressCard().getLandmark(), "LocationCard: ");
+        //Log.d(people.getAddressCard().getLatitude().toString(), "LocationCard: ");
+        //Log.d(people.getAddressCard().getLongitude().toString(), "LocationCard: ");
+        //uploadFromFile(uri.getPath());
+        intent2.putExtra("data", people);
+
+        intent2.putExtra("PathImgLocationCard",PathImgLocationCard);
+
+        startActivity(intent2);
+        Log.e("onPressBack","Hello World2");
+        finish();
     }
 
     private void selectImage() {

@@ -88,6 +88,7 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
     private StorageReference folderRef, imageRef;
     private Spinner mRelationship,mSex;
     private People people;
+
     private AddressData addressData;
     private ContactData contactData;
     private String contactID;
@@ -123,7 +124,7 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
         /*------------------- intent ข้อมูล --------------------------------------------------------------------------------------------------*/
         Intent intent = getIntent();
         people = (People) intent.getExtras().getSerializable("data");
-
+        contactData = (ContactData) intent.getExtras().getSerializable("contactData");
         permissionStatus = getSharedPreferences("permissionStatus",MODE_PRIVATE);
         PathImgLocationCard = getIntent().getExtras().getString("PathImgLocationCard");
         PathImgLocationNow = getIntent().getExtras().getString("PathImgLocationNow");
@@ -139,33 +140,66 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
         Log.d(people.getAddressNow().getRoad(), "LocationNow: ");
         Log.d(people.getAddressNow().getPostcode(), "LocationNow: ");
         Log.d(people.getAddressNow().getLandmark(), "LocationNow: ");
+/*------------------- Button BLatLng --------------------------------------------------------------------------------------------------*/
+        Button BLatLng = (Button) findViewById(R.id.BLatLng) ;
+        BLatLng.setOnClickListener(EmergencyContact.this);
+/*------------------- TextView ------------------------------------*/
+        ECitizenID = (EditText) findViewById(R.id.ECitizenID);
+        ETitleTH = (EditText) findViewById(R.id.ETitleTH);
+        EFirstName = (EditText) findViewById(R.id.EFirstName);
+        ELastName = (EditText) findViewById(R.id.ELastName);
+        ETell = (EditText) findViewById(R.id.ETell);
+        EHomeTell = (EditText) findViewById(R.id.EHomeTell);
 
+        EHouseNumber = (EditText) findViewById(R.id.EHouseNumber);
+        EMoo = (EditText) findViewById(R.id.EMoo);
+        ESoi = (EditText) findViewById(R.id.ESoi);
+        ERoad = (EditText) findViewById(R.id.ERoad);
+
+        EPostcode = (EditText) findViewById(R.id.EPostCode);
+        ELandmark = (EditText) findViewById(R.id.ELanmark);
+        if (contactData!=null) {
+            if (contactData.getCitizenID() != null)
+                ECitizenID.setText(contactData.getCitizenID());
+
+            if (contactData.getPrefixThai() != null)
+                ETitleTH.setText(contactData.getPrefixThai());
+
+            if (contactData.getFirstNameThai() != null)
+                EFirstName.setText(contactData.getFirstNameThai());
+
+            if (contactData.getLastNameThai() != null)
+                ELastName.setText(contactData.getLastNameThai());
+
+            if (contactData.getTell() != null)
+                ETell.setText(contactData.getTell());
+
+            if (contactData.getHometell() != null)
+                EHomeTell.setText(contactData.getHometell());
+            if (contactData.getAddressData() != null) {
+                if (contactData.getAddressData().getHouseNumber() != null)
+                    EHouseNumber.setText(contactData.getAddressData().getHouseNumber());
+
+                if (contactData.getAddressData().getMoo() != null)
+                    EMoo.setText(contactData.getAddressData().getMoo());
+
+                if (contactData.getAddressData().getSoi() != null)
+                    ESoi.setText(contactData.getAddressData().getSoi());
+
+                if (contactData.getAddressData().getRoad() != null)
+                    ERoad.setText(contactData.getAddressData().getRoad());
+
+                if (contactData.getAddressData().getPostcode() != null)
+                    EPostcode.setText(contactData.getAddressData().getPostcode());
+
+                if (contactData.getAddressData().getLandmark() != null)
+                    ELandmark.setText(contactData.getAddressData().getLandmark());
+
+            }
+        }
+        /*------------------- Firebase ------------------------------------*/
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference ref = database.getReference("EmergencyContact").child(people.getContactID());
-//        ref.addChildEventListener(ChildEventListener listener) {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                if (dataSnapshot.exists()) {
-//                    // dataSnapshot is the "issue" node with all children with id 0
-//                    for (DataSnapshot issue : dataSnapshot.getChildren()) {
-//                         contactData = issue.getValue(ContactData.class);
-//                        // do something with the individual "issues"
-//                        Log.d(contactData.getCitizenID(), "onDataChange: ");
-//                        Log.d("MMMMMMMMMMMMMMMMMMMMM", "onDataChange: ");
-//                        //textView.setText("finish firebase");
-//                        //Log.d("cardReader", people.getContactID());
-//                        //textView.setText(carddata.getFirstNameEng());
-//                    }
-//                }
-//            }
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//                //textView.setText(databaseError.getMessage());
-//                Log.d(databaseError.getMessage(), "onCancelled: ");
-//                Log.d("FFFFFFFFFFFF", "onDataChange: ");
-//            }
-//        });
 
 //////////////////
         /*------------------- Photo--------------------------------------------------*/
@@ -179,8 +213,31 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
                 /*------------------- Spinner Relationship--------------------------------------------------------------------------------------------------*/
         String[] Relationship = getResources().getStringArray(R.array.Relationship);
         mRelationship = (Spinner) findViewById(R.id.Relationship);
-        ArrayAdapter<String> adapterRelationship = new ArrayAdapter<String>(EmergencyContact.this, android.R.layout.simple_dropdown_item_1line, Relationship);
+        if(contactData !=null && contactData.getRelationship()!=null){
+            Relationship[Relationship.length-1] = contactData.getRelationship();
+        }
+        ArrayAdapter<String> adapterRelationship = new ArrayAdapter<String>(EmergencyContact.this, android.R.layout.simple_dropdown_item_1line, Relationship){
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                Log.d(getItem(getCount()), "getView: ");
+                View v = super.getView(position, convertView, parent);
+                if (position == getCount()) {
+                    ((TextView) v.findViewById(android.R.id.text1)).setText(getItem(getCount()));
+                    ((TextView) v.findViewById(android.R.id.text1)).setTextSize(14);
+                    //((TextView)v.findViewById(android.R.id.text1)).setHint(getItem(getCount())); //"Hint to be displayed"
+                }
+                return v;
+            }
+
+            @Override
+            public int getCount() {
+                return super.getCount() - 1; // you dont display last item. It is used as hint.
+            }
+        };
+        adapterRelationship.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mRelationship.setAdapter(adapterRelationship);
+        mRelationship.setSelection(adapterRelationship.getCount());
+
         mRelationship.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
@@ -206,8 +263,29 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
                 /*------------------- Spinner Sex--------------------------------------------------------------------------------------------------*/
         String[] Sex = getResources().getStringArray(R.array.Sex);
         mSex = (Spinner) findViewById(R.id.Sex);
-        ArrayAdapter<String> adapterSex = new ArrayAdapter<String>(EmergencyContact.this, android.R.layout.simple_dropdown_item_1line, Sex);
+        ArrayAdapter<String> adapterSex = new ArrayAdapter<String>(EmergencyContact.this, android.R.layout.simple_dropdown_item_1line, Sex){
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                Log.d(getItem(getCount()), "getView: ");
+                View v = super.getView(position, convertView, parent);
+                if (position == getCount()) {
+                    ((TextView) v.findViewById(android.R.id.text1)).setText(getItem(getCount()));
+                    ((TextView) v.findViewById(android.R.id.text1)).setTextSize(14);
+                    //((TextView)v.findViewById(android.R.id.text1)).setHint(getItem(getCount())); //"Hint to be displayed"
+                }
+                return v;
+            }
+
+            @Override
+            public int getCount() {
+                return super.getCount() - 1; // you dont display last item. It is used as hint.
+            }
+        };
+        adapterSex.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+
         mSex.setAdapter(adapterSex);
+        mSex.setSelection(adapterSex.getCount());
         mSex.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
@@ -230,24 +308,7 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
                 Toast.makeText(EmergencyContact.this, "You Must Buy-In To Play", Toast.LENGTH_SHORT).show();
             } // end onNothingSelected method
         });
-        /*------------------- Button BLatLng --------------------------------------------------------------------------------------------------*/
-            Button BLatLng = (Button) findViewById(R.id.BLatLng) ;
-            BLatLng.setOnClickListener(EmergencyContact.this);
-/*------------------- TextView ------------------------------------*/
-        ECitizenID = (EditText) findViewById(R.id.ECitizenID);
-        ETitleTH = (EditText) findViewById(R.id.ETitleTH);
-        EFirstName = (EditText) findViewById(R.id.EFirstName);
-        ELastName = (EditText) findViewById(R.id.ELastName);
-        ETell = (EditText) findViewById(R.id.ETell);
-        EHomeTell = (EditText) findViewById(R.id.EHomeTell);
 
-        EHouseNumber = (EditText) findViewById(R.id.EHouseNumber);
-        EMoo = (EditText) findViewById(R.id.EMoo);
-        ESoi = (EditText) findViewById(R.id.ESoi);
-        ERoad = (EditText) findViewById(R.id.ERoad);
-
-        EPostcode = (EditText) findViewById(R.id.EPostCode);
-        ELandmark = (EditText) findViewById(R.id.ELanmark);
 /*------------------- Spinner Province--------------------------------------------------------------------------------------------------*/
         mProvince = (Spinner) findViewById(R.id.Province);
 
@@ -605,10 +666,37 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
                     myRef.child("EmergencyContact").child(people.getContactID()).setValue(contactData);
                     myRef.child("Peoplee").child(people.getPeopleKey()).setValue(people);
 
-
             }
         }
     }
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent2 = new Intent(EmergencyContact.this, LocationNow.class);
+        addressData.setHouseNumber(EHouseNumber.getText().toString());
+        addressData.setMoo(EMoo.getText().toString());
+        addressData.setSoi(ESoi.getText().toString());
+        addressData.setRoad(ERoad.getText().toString());
+        addressData.setPostcode(EPostcode.getText().toString());
+        addressData.setLandmark(ELandmark.getText().toString());
+        contactData.setAddressData(addressData);
+        contactData.setCitizenID(ECitizenID.getText().toString());
+        contactData.setPrefixThai(ETitleTH.getText().toString());
+        contactData.setFirstNameThai(EFirstName.getText().toString());
+        contactData.setLastNameThai(ELastName.getText().toString());
+
+        contactData.setTell(ETell.getText().toString());
+        contactData.setHometell(EHomeTell.getText().toString());
+        contactData.setRelationship(mRelationship.getSelectedItem().toString());
+        contactData.setSex(mSex.getSelectedItem().toString());
+        //people.setAddressCard(people.getAddressCard());
+        people.setContactID(contactID);
+        intent2.putExtra("contactData", contactData);
+        intent2.putExtra("data", people);
+        startActivity(intent2);
+        Log.e("onPressBack","Hello World4");
+        finish();
+    }
+
     private void selectImage() {
         final CharSequence[] options = { "Take Photo", "Choose from Gallery","Cancel" };
 

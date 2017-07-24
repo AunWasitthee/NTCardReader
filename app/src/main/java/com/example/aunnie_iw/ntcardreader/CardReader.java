@@ -72,8 +72,10 @@ public class CardReader extends Activity implements View.OnClickListener {
     /*-------------------------------------------------------------*/
     protected Card card = null;
     private People people;
+    private ContactData contactData;
     private AddressData addressData;
     private ProfileData profileData;
+    private DisabilityData disabilityData;
     /*-----------------Permission----------------------------*/
     private SharedPreferences permissionStatus;
     private boolean sentToSettings = false;
@@ -121,6 +123,7 @@ public class CardReader extends Activity implements View.OnClickListener {
 //        DateToday = (TextView) findViewById(R.id.DateToday);DateToday.setEnabled(false);
 //        Img=(ImageView) findViewById(R.id.imageView1);
         people = new People();
+        contactData = new ContactData();
     }
 
     @SuppressLint("NewApi")
@@ -227,118 +230,111 @@ public class CardReader extends Activity implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
+//        if (view == mReadData) {
+////             String deviceName = (String) mSpinner.getSelectedItem(); //ทำการเลือกitem ใน spinner
+//            if (deviceName != null)
+////            ------(*)-------------ส่วนของการเช็คชื่อเเละทำการตรวจอุปรณ์เเละทำการ connect---------------
+//            {
+//                for (UsbDevice device : mUsbManager.getDeviceList().values()) {
+//                    // If device name is found
+//                    if (deviceName.equals(device.getDeviceName())) {
+//                        if (mCard != null) {
+//                            mCard.close();
+//                        }
+//                        mCard = new NT_reader(mUsbManager, mDevice);
+//                        break;
+//                    }
+//                }
+//            }
+//            try {
+//                mCard.open();
+//                //mOk.setEnabled(false);
+//                mReadData.setEnabled(false);
+////                Stmsg.setText("เปิดอุปกรณ์สำเร็จ "+"\n");
+//                mCard.startCardStatusMonitoring(mHandler);
+//            } catch (Exception e) {
+//                // Stmsg.setText("ไม่พบอุปกรณ์"+"\n");
+//            }
+//        }
         if (view == mReadData) {
-//             String deviceName = (String) mSpinner.getSelectedItem(); //ทำการเลือกitem ใน spinner
-            if (deviceName != null)
-//            ------(*)-------------ส่วนของการเช็คชื่อเเละทำการตรวจอุปรณ์เเละทำการ connect---------------
-            {
-                for (UsbDevice device : mUsbManager.getDeviceList().values()) {
-                    // If device name is found
-                    if (deviceName.equals(device.getDeviceName())) {
-                        if (mCard != null) {
-                            mCard.close();
-                        }
-                        mCard = new NT_reader(mUsbManager, mDevice);
-                        break;
-                    }
-                }
-            }
-            try {
-                mCard.open();
-                //mOk.setEnabled(false);
-                mReadData.setEnabled(false);
-//                Stmsg.setText("เปิดอุปกรณ์สำเร็จ "+"\n");
-                mCard.startCardStatusMonitoring(mHandler);
-            } catch (Exception e) {
-                // Stmsg.setText("ไม่พบอุปกรณ์"+"\n");
-            }
+            inputIdCard.setText("1809900590074");
         }
         if (view == mOk) {
             try {
 //             String deviceName = (String) mSpinner.getSelectedItem(); //ทำการเลือกitem ใน spinner
-            String idcard = inputIdCard.getText().toString();
-            //textView.setText(idcard);
-            DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-
-            Query query = reference.child("Peoplee").orderByChild("profileData/citizenID").equalTo(idcard);
-            query.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        // dataSnapshot is the "issue" node with all children with id 0
-                        for (DataSnapshot issue : dataSnapshot.getChildren()) {
-                            people = issue.getValue(People.class);
-                            // do something with the individual "issues"
-
-                            //textView.setText("finish firebase");
-                            //Log.d("cardReader", people.getContactID());
-                            Intent intent = new Intent(CardReader.this, Profile.class);
-
-                            intent.putExtra("data", people);
-                            startActivity(intent);
-                            //textView.setText(carddata.getFirstNameEng());
-                        }
-
-
+                String idcard = inputIdCard.getText().toString();
+                //textView.setText(idcard);
+                findPeoplefromFirebase(idcard);
+                Log.d("onClick: ",people.getContactID());
+                if (people != null) {
+                    if (people.getContactID() != null) {
+                        FindContactDataFromFirebase();
+                        Log.d("onClick: ",contactData.getSex());
                     }
-                    else if(card != null ){
-                        try {
-                            //textView.setText("อ่านข้อมูลจาก card");
-                            addressData = new AddressData();
-                            addressData.setAmphur(card.getAddress().getAmphur());
-                            addressData.setHouseNumber(card.getAddress().getHouseNumber());
-                            addressData.setMoo(card.getAddress().getMoo());
-                            addressData.setProvince(card.getAddress().getProvince());
-                            addressData.setTambon(card.getAddress().getTambon());
-                                ByteArrayOutputStream bYtE = new ByteArrayOutputStream();
-                                card.getPicture().compress(Bitmap.CompressFormat.PNG, 100, bYtE);
-                                card.getPicture().recycle();
-                                byte[] byteArray = bYtE.toByteArray();
-                                String imageFile = Base64.encodeToString(byteArray, Base64.DEFAULT);
-                                profileData = new ProfileData();
-                                profileData.setCitizenID(card.getCitizenID());
-                           // profileData.setTitleEng(card.getTitleEng());
-                            profileData.setPrefixThai(card.getTitleThai());
-                            profileData.setBirthday(card.getBirthday());
-                            profileData.setCitizenID(card.getCitizenID());
-                           // profileData.setCreateCard(card.getCreateCard());
-                           // profileData.setFirstNameEng(card.getFirstNameEng());
-                            profileData.setFirstNameThai(card.getFirstNameThai());
-                           // profileData.setLastNameEng(card.getLastNameEng());
-                            profileData.setLastNameThai(card.getLastNameThai());
+                    Intent intent = new Intent(CardReader.this, Profile.class);
+                    intent.putExtra("data", people);
+                    intent.putExtra("contactData", contactData);
+                    startActivity(intent);
+                } else if (card != null) {
+                    try {
+                        //textView.setText("อ่านข้อมูลจาก card");
+                        addressData = new AddressData();
+                        addressData.setAmphur(card.getAddress().getAmphur());
+                        addressData.setHouseNumber(card.getAddress().getHouseNumber());
+                        addressData.setMoo(card.getAddress().getMoo());
+                        addressData.setProvince(card.getAddress().getProvince());
+                        addressData.setTambon(card.getAddress().getTambon());
+                        ByteArrayOutputStream bYtE = new ByteArrayOutputStream();
+                        card.getPicture().compress(Bitmap.CompressFormat.PNG, 100, bYtE);
+                        card.getPicture().recycle();
+                        byte[] byteArray = bYtE.toByteArray();
+                        String imageFile = Base64.encodeToString(byteArray, Base64.DEFAULT);
+                        profileData = new ProfileData();
+                        profileData.setCitizenID(card.getCitizenID());
+                        // profileData.setTitleEng(card.getTitleEng());
+                        profileData.setPrefixThai(card.getTitleThai());
+                        profileData.setBirthday(card.getBirthday());
+                        profileData.setCitizenID(card.getCitizenID());
+                        // profileData.setCreateCard(card.getCreateCard());
+                        // profileData.setFirstNameEng(card.getFirstNameEng());
+                        profileData.setFirstNameThai(card.getFirstNameThai());
+                        // profileData.setLastNameEng(card.getLastNameEng());
+                        profileData.setLastNameThai(card.getLastNameThai());
 
-                           // profileData.setDateThaitoday(card.getDateThaitoday());
-                           // profileData.setExpireCard(card.getExpireCard());
+                        // profileData.setDateThaitoday(card.getDateThaitoday());
+                        // profileData.setExpireCard(card.getExpireCard());
 
-                            profileData.setImg(imageFile);
-                            people.setAddressCard(addressData);
-                            people.setProfileData(profileData);
-                            Log.d("cardFirebase", profileData.getCitizenID());
-                            Intent intent = new Intent(CardReader.this, Profile.class);
-                            intent.putExtra("data", people);
-                            startActivity(intent);
-                        } catch (Exception e) {
-                            //textView.setText(e.getMessage() + "" );
-                        }
-
+                        //profileData.setImg(imageFile);
+                        disabilityData = new DisabilityData();
+                        people.setAddressCard(addressData);
+                        people.setProfileData(profileData);
+                        //people.setDisabilityData(disabilityData);
+                        Log.d("cardFirebase", profileData.getCitizenID());
+                        Intent intent = new Intent(CardReader.this, Profile.class);
+                        intent.putExtra("data", people);
+                        intent.putExtra("contactData", contactData);
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        //textView.setText(e.getMessage() + "" );
                     }
-                    else{
-                        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(CardReader.this);
 
-                        // set title
-                        //alertDialogBuilder.setTitle("ไม่พบข้อมูล/หมายเลขบัตรไม่ถูกต้อง");
+                } else {
+                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(CardReader.this);
 
-                        // set dialog message
-                        alertDialogBuilder
-                                .setMessage("ไม่พบข้อมูล/หมายเลขบัตรไม่ถูกต้อง")
-                                .setCancelable(false)
-                                .setPositiveButton("ตกลง",new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog,int id) {
-                                        // if this button is clicked, close
-                                        // current activity
-                                        //MainActivity.this.finish();
-                                    }
-                                });
+                    // set title
+                    //alertDialogBuilder.setTitle("ไม่พบข้อมูล/หมายเลขบัตรไม่ถูกต้อง");
+
+                    // set dialog message
+                    alertDialogBuilder
+                            .setMessage("ไม่พบข้อมูล/หมายเลขบัตรไม่ถูกต้อง")
+                            .setCancelable(false)
+                            .setPositiveButton("ตกลง", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // if this button is clicked, close
+                                    // current activity
+                                    //MainActivity.this.finish();
+                                }
+                            });
 //                                .setNegativeButton("No",new DialogInterface.OnClickListener() {
 //                                    public void onClick(DialogInterface dialog, int id) {
 //                                        // if this button is clicked, just close
@@ -347,24 +343,89 @@ public class CardReader extends Activity implements View.OnClickListener {
 //                                    }
 //                                });
 
-                        // create alert dialog
-                        AlertDialog alertDialog = alertDialogBuilder.create();
+                    // create alert dialog
+                    AlertDialog alertDialog = alertDialogBuilder.create();
 
-                        // show it
-                        alertDialog.show();
+                    // show it
+                    alertDialog.show();
+                }
+
+            }catch (Exception e) {
+                //textView.setText(e.getMessage() + "" );
+            }
+        }
+    }
+
+    private void findPeoplefromFirebase(String idcard) {
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+
+        Query query = reference.child("Peoplee").orderByChild("profileData/citizenID").equalTo(idcard);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    // dataSnapshot is the "issue" node with all children with id 0
+                    for (DataSnapshot issue : dataSnapshot.getChildren()) {
+                        People p = issue.getValue(People.class);
+                        // do something with the individual "issues"
+                        setPeople(p);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    private void FindContactDataFromFirebase() {
+        DatabaseReference ref = database.getReference("EmergencyContact");
+        Log.d("FindCo ",people.getContactID());
+        ref.orderByKey().equalTo(people.getContactID()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    // dataSnapshot is the "issue" node with all children with id 0
+                    for (DataSnapshot issue : dataSnapshot.getChildren()) {
+                        ContactData  data = issue.getValue(ContactData.class);
+                        // do something with the individual "issues"
+                        Log.d(data.getCitizenID(), "onDataChange: ");
+                        Log.d("MMMMMMMMMMMMMMMMMMMMM", "onDataChange: ");
+                        setContactData(data);
+
                     }
 
                 }
+            }
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    //textView.setText(databaseError.getMessage());
-                }
-            });
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                //textView.setText(databaseError.getMessage());
+                Log.d(databaseError.getMessage(), "onCancelled: ");
+                Log.d("FFFFFFFFFFFF", "onDataChange: ");
+            }
+        });
 
-                } catch (Exception e) {
-                    //textView.setText(e.getMessage());
-                }
-        }
+    }
+
+
+    public ContactData getContactData() {
+        return this.contactData;
+    }
+
+    public void setContactData(ContactData contactData) {
+        this.contactData = contactData;
+    }
+
+    public People getPeople() {
+        return this.people;
+    }
+
+    public void setPeople(People people) {
+        this.people = people;
     }
 }

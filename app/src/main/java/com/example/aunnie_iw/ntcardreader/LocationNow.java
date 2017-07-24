@@ -75,6 +75,7 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
     private Double latitude;
     private Double longitude;
     private People people;
+    private ContactData contactData;
     private AddressData addressData;
     private EditText EHouseNumber, EMoo,ESoi,ERoad,ETambon,RAmphur,EProvince,EPostcode,ELandmark,EPhotourl;
     private Spinner mProvince,mAmphur,mTambon;
@@ -100,7 +101,7 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
         /*------------------- intent ข้อมูล --------------------------------------------------------------------------------------------------*/
         Intent intent = getIntent();
         people = (People) intent.getExtras().getSerializable("data");
-
+        contactData = (ContactData) intent.getExtras().getSerializable("contactData");
         PathImgLocationCard = getIntent().getExtras().getString("PathImgLocationCard");
 
 
@@ -493,25 +494,62 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
                     addressData.setLatitude(latitude);
                     addressData.setLongitude(longitude);
                     people.setAddressNow(addressData);
-                    Log.d(people.getAddressNow().getHouseNumber(), "LocationNow: ");
-                    Log.d(people.getAddressNow().getMoo(), "LocationNow: ");
-                    Log.d(people.getAddressNow().getSoi(), "LocationNowSoi: ");
-                    Log.d(people.getAddressNow().getRoad(), "LocationNow: ");
-                    Log.d(people.getAddressNow().getPostcode(), "LocationNow: ");
-                    Log.d(people.getAddressNow().getLandmark(), "LocationNow: ");
+//                    Log.d(people.getAddressNow().getHouseNumber(), "LocationNow: ");
+//                    Log.d(people.getAddressNow().getMoo(), "LocationNow: ");
+//                    Log.d(people.getAddressNow().getSoi(), "LocationNowSoi: ");
+//                    Log.d(people.getAddressNow().getRoad(), "LocationNow: ");
+//                    Log.d(people.getAddressNow().getPostcode(), "LocationNow: ");
+//                    Log.d(people.getAddressNow().getLandmark(), "LocationNow: ");
                     //Log.d(people.getAddressCard().getLatitude().toString(), "LocationCard: ");
                     //Log.d(people.getAddressCard().getLongitude().toString(), "LocationCard: ");
                     intent2.putExtra("data", people);
-
+                    intent2.putExtra("contactData",contactData);
                     intent2.putExtra("PathImgLocationCard",PathImgLocationCard);
                     intent2.putExtra("PathImgLocationNow",PathImgLocationNow);
                     startActivity(intent2);
+                    finish();
                     break;
                 case R.id.BSelectPhoto:
                     selectImage();
                     break;
             }
         }
+
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent2 = new Intent(LocationNow.this, LocationCard.class);
+        //intent.putExtra("data", cardFirebase);
+        addressData.setHouseNumber(EHouseNumber.getText().toString());
+        addressData.setMoo(EMoo.getText().toString());
+        addressData.setSoi(ESoi.getText().toString());
+        addressData.setRoad(ERoad.getText().toString());
+
+        addressData.setProvince(mProvince.getSelectedItem().toString());
+        addressData.setAmphur(mAmphur.getSelectedItem().toString());
+        addressData.setTambon(mTambon.getSelectedItem().toString());
+
+        addressData.setPostcode(EPostcode.getText().toString());
+        addressData.setLandmark(ELandmark.getText().toString());
+        addressData.setLatitude(latitude);
+        addressData.setLongitude(longitude);
+        people.setAddressNow(addressData);
+//        Log.d(people.getAddressNow().getHouseNumber(), "LocationNow: ");
+//        Log.d(people.getAddressNow().getMoo(), "LocationNow: ");
+//        Log.d(people.getAddressNow().getSoi(), "LocationNowSoi: ");
+//        Log.d(people.getAddressNow().getRoad(), "LocationNow: ");
+//        Log.d(people.getAddressNow().getPostcode(), "LocationNow: ");
+//        Log.d(people.getAddressNow().getLandmark(), "LocationNow: ");
+        //Log.d(people.getAddressCard().getLatitude().toString(), "LocationCard: ");
+        //Log.d(people.getAddressCard().getLongitude().toString(), "LocationCard: ");
+        intent2.putExtra("data", people);
+
+        intent2.putExtra("PathImgLocationCard",PathImgLocationCard);
+        intent2.putExtra("PathImgLocationNow",PathImgLocationNow);
+        startActivity(intent2);
+        Log.e("onPressBack","Hello World3");
+        finish();
+
+    }
     private void selectImage() {
         final CharSequence[] options = { "Take Photo", "Choose from Gallery","Cancel" };
 

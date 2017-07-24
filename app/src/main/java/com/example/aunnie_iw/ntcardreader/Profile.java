@@ -63,13 +63,14 @@ import okhttp3.Response;
  */
 
 public class Profile extends AppCompatActivity implements MultiSelectionSpinner.MultiSpinnerListener ,View.OnClickListener  {
-    private  Spinner mMarriage,mBloodType,mSex,mReligion,mDisability;
+    private Spinner mMarriage,mBloodType,mSex,mReligion,mDisability;
 
     private TextView ECitizenID,ETitleTH,EFirstName,ELastName;
     private EditText EBirthday,ETell,EHomeTell,EEmail,EDisease,EAllergy,EHospitalNear,EHospitalUse;
     private Switch EAlive ,EHearing;
     private ImageView Img ;
     private People people;
+    private ContactData contactData;
     private ProfileData profileData;
     private DisabilityData disabilityData;
 
@@ -86,10 +87,13 @@ public class Profile extends AppCompatActivity implements MultiSelectionSpinner.
         profileData = new ProfileData();
         disabilityData = new DisabilityData();
         people = new People();
+        contactData = new ContactData();
         mMarriage = (Spinner) findViewById(R.id.Marriage);
 /*------------------- intent ข้อมูล --------------------------------------------------------------------------------------------------*/
         Intent intent = getIntent();
         people = (People) intent.getExtras().getSerializable("data");
+        contactData = (ContactData) intent.getExtras().getSerializable("contactData");
+        Log.d("onCreate: ",contactData.getCitizenID());
         Log.d("5555555555", people.getProfileData().getCitizenID());
         Bitmap pic = stringToBitMap(people.getProfileData().getImg());
 
@@ -568,8 +572,18 @@ public class Profile extends AppCompatActivity implements MultiSelectionSpinner.
                 Log.d(people.getProfileData().getHospitalUse(), "onClick: ");
                 Log.d(people.getProfileData().getAlive(), "onClick: ");
                 intent.putExtra("data", people);
+                intent.putExtra("contactData",contactData);
                 startActivity(intent);
+                finish();
                 break;
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+            finish();
+            Log.e("onPressBack","Hello World");
+    }
+
 }
