@@ -79,8 +79,7 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
     private Uri uri;
     private File f;
     private TextView SLatLng;
-    private Double latitude;
-    private Double longitude;
+
     // Write a message to the database
     protected FirebaseDatabase database = FirebaseDatabase.getInstance();
     protected DatabaseReference myRef = database.getReference();
@@ -89,7 +88,7 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
     private Spinner mRelationship,mSex;
     private People people;
 
-    private AddressData addressData;
+
     private ContactData contactData;
     private String contactID;
     private String peopleKey;
@@ -119,7 +118,7 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
         //StorageReference storageRef = storage.getReference();
         //imageRef = folderRef.child(people.getProfileData().getCitizenID() +"_LocationCard.jpg");
 
-        addressData = new AddressData();
+
         contactData = new ContactData();
         /*------------------- intent ข้อมูล --------------------------------------------------------------------------------------------------*/
         Intent intent = getIntent();
@@ -158,6 +157,8 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
 
         EPostcode = (EditText) findViewById(R.id.EPostCode);
         ELandmark = (EditText) findViewById(R.id.ELanmark);
+        SLatLng = (TextView) findViewById(R.id.SLatLng);
+
         if (contactData!=null) {
             if (contactData.getCitizenID() != null)
                 ECitizenID.setText(contactData.getCitizenID());
@@ -194,6 +195,8 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
 
                 if (contactData.getAddressData().getLandmark() != null)
                     ELandmark.setText(contactData.getAddressData().getLandmark());
+                if (contactData.getAddressData().getAddress() != null && contactData.getAddressData().getLatitude() != null && contactData.getAddressData().getLongitude() != null )
+                    SLatLng.setText(contactData.getAddressData().getAddress()+ " ( " + String.valueOf(contactData.getAddressData().getLatitude()) +", "+String.valueOf(contactData.getAddressData().getLongitude() +" )"));
 
             }
         }
@@ -263,6 +266,9 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
                 /*------------------- Spinner Sex--------------------------------------------------------------------------------------------------*/
         String[] Sex = getResources().getStringArray(R.array.Sex);
         mSex = (Spinner) findViewById(R.id.Sex);
+        if(contactData !=null && contactData.getSex()!=null){
+            Sex[Sex.length-1] = contactData.getSex();
+        }
         ArrayAdapter<String> adapterSex = new ArrayAdapter<String>(EmergencyContact.this, android.R.layout.simple_dropdown_item_1line, Sex){
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
@@ -364,7 +370,15 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
         };
         adapterProvince.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mProvince.setAdapter(adapterProvince);
-        mProvince.setSelection(adapterProvince.getCount());
+        int indexProvince;
+        if(contactData != null && contactData.getAddressData()!=null&&contactData.getAddressData().getProvince()!=null){
+            //Province[Province.length-1] = people.getAddressCard().getProvince();
+            indexProvince = Arrays.asList(Province).indexOf(people.getAddressNow().getProvince());
+            mProvince.setSelection(indexProvince);
+        }
+        else {
+            mProvince.setSelection(adapterProvince.getCount());
+        }
         mProvince.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View v, int i, long l) {
@@ -461,7 +475,15 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
         };
         adapterAmphur.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mAmphur.setAdapter(adapterAmphur);
-        mAmphur.setSelection(adapterAmphur.getCount());
+        int indexAmphur;
+        if(contactData != null && contactData.getAddressData()!=null&&contactData.getAddressData().getAmphur()!=null){
+            //Amphur[Amphur.length-1] = people.getAddressCard().getAmphur();
+            indexAmphur = Arrays.asList(Amphur).indexOf(people.getAddressNow().getAmphur());
+            mAmphur.setSelection(indexAmphur);
+        }
+        else {
+            mAmphur.setSelection(adapterAmphur.getCount());
+        }
         mAmphur.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View v, int i, long l) {
@@ -555,7 +577,15 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
         };
         adapterTambon.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mTambon.setAdapter(adapterTambon);
-        mTambon.setSelection(adapterTambon.getCount());
+        int indexTambon;
+        if(contactData != null && contactData.getAddressData()!=null&&contactData.getAddressData().getTambon()!=null){
+            //Amphur[Amphur.length-1] = people.getAddressCard().getAmphur();
+            indexTambon = Arrays.asList(Tambon).indexOf(people.getAddressNow().getTambon());
+            mTambon.setSelection(indexTambon);
+        }
+        else {
+            mTambon.setSelection(adapterTambon.getCount());
+        }
         mTambon.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View v, int i, long l)
@@ -588,13 +618,16 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
                 break;
 
             case R.id.Update: {
-                addressData.setHouseNumber(EHouseNumber.getText().toString());
-                addressData.setMoo(EMoo.getText().toString());
-                addressData.setSoi(ESoi.getText().toString());
-                addressData.setRoad(ERoad.getText().toString());
-                addressData.setPostcode(EPostcode.getText().toString());
-                addressData.setLandmark(ELandmark.getText().toString());
-                contactData.setAddressData(addressData);
+                contactData.getAddressData().setHouseNumber(EHouseNumber.getText().toString());
+                contactData.getAddressData().setMoo(EMoo.getText().toString());
+                contactData.getAddressData().setSoi(ESoi.getText().toString());
+                contactData.getAddressData().setRoad(ERoad.getText().toString());
+                contactData.getAddressData().setPostcode(EPostcode.getText().toString());
+                contactData.getAddressData().setLandmark(ELandmark.getText().toString());
+                contactData.getAddressData().setProvince(mProvince.getSelectedItem().toString());
+                contactData.getAddressData().setAmphur(mAmphur.getSelectedItem().toString());
+                contactData.getAddressData().setTambon(mTambon.getSelectedItem().toString());
+
                 contactData.setCitizenID(ECitizenID.getText().toString());
                 contactData.setPrefixThai(ETitleTH.getText().toString());
                 contactData.setFirstNameThai(EFirstName.getText().toString());
@@ -672,13 +705,17 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
     public void onBackPressed() {
         super.onBackPressed();
         Intent intent2 = new Intent(EmergencyContact.this, LocationNow.class);
-        addressData.setHouseNumber(EHouseNumber.getText().toString());
-        addressData.setMoo(EMoo.getText().toString());
-        addressData.setSoi(ESoi.getText().toString());
-        addressData.setRoad(ERoad.getText().toString());
-        addressData.setPostcode(EPostcode.getText().toString());
-        addressData.setLandmark(ELandmark.getText().toString());
-        contactData.setAddressData(addressData);
+        contactData.getAddressData().setHouseNumber(EHouseNumber.getText().toString());
+        contactData.getAddressData().setMoo(EMoo.getText().toString());
+        contactData.getAddressData().setSoi(ESoi.getText().toString());
+        contactData.getAddressData().setRoad(ERoad.getText().toString());
+        contactData.getAddressData().setPostcode(EPostcode.getText().toString());
+        contactData.getAddressData().setLandmark(ELandmark.getText().toString());
+
+        contactData.getAddressData().setProvince(mProvince.getSelectedItem().toString());
+        contactData.getAddressData().setAmphur(mAmphur.getSelectedItem().toString());
+        contactData.getAddressData().setTambon(mTambon.getSelectedItem().toString());
+
         contactData.setCitizenID(ECitizenID.getText().toString());
         contactData.setPrefixThai(ETitleTH.getText().toString());
         contactData.setFirstNameThai(EFirstName.getText().toString());
@@ -802,12 +839,12 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
             }
         }
         else if (requestCode == REQUEST_ADDRESS && resultCode == RESULT_OK) {
-            String address = data.getStringExtra("address");
-            latitude = data.getExtras().getDouble("latitude");
-            longitude = data.getExtras().getDouble("longitude");
-            Log.d("latitude",Double.toString(latitude));
-            Log.d("longitude",Double.toString(longitude));
-            SLatLng.setText(address + " (" + latitude + " , " + longitude + " )");
+            contactData.getAddressData().setAddress(data.getStringExtra("address"));
+            contactData.getAddressData().setLatitude(data.getExtras().getDouble("latitude"));
+            contactData.getAddressData().setLongitude(data.getExtras().getDouble("longitude"));
+            Log.d("latitude",Double.toString(contactData.getAddressData().getLatitude()));
+            Log.d("longitude",Double.toString(contactData.getAddressData().getLongitude()));
+            SLatLng.setText(contactData.getAddressData().getAddress() + " (" + contactData.getAddressData().getLatitude() + " , " + contactData.getAddressData().getLongitude() + " )");
 
         }
     }

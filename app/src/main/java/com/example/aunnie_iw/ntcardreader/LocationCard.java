@@ -84,11 +84,10 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
     private File f;
     private StorageReference folderRef, imageRef;
     private TextView SLatLng;
-    private Double latitude;
-    private Double longitude;
+
     private People people;
     private ContactData contactData;
-    private AddressData addressData;
+
     private EditText EHouseNumber, EMoo,ESoi,ERoad,EPostcode,ELandmark,EPhotourl;
     private Spinner mProvince,mAmphur,mTambon;
 
@@ -108,7 +107,7 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.LocationCard);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        addressData = new AddressData();
+
 
         StorageReference storageRef = FirebaseStorage.getInstance().getReference();
 //        folderRef = storageRef.child("photos");
@@ -178,9 +177,10 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
         if(people.getAddressCard() !=null && people.getAddressCard().getLandmark()!=null)
             ELandmark.setText(people.getAddressCard().getLandmark());
 
+
         SLatLng = (TextView) findViewById(R.id.SLatLng);
-        if(people.getAddressCard() !=null && people.getAddressCard().getLatitude()!=null&&people.getAddressCard().getLongitude()!=null)
-            SLatLng.setText("( " + String.valueOf(people.getAddressCard().getLatitude()) +", "+String.valueOf(people.getAddressCard().getLongitude() +" )"));
+        if(people.getAddressCard() !=null && people.getAddressCard().getAddress() !=null && people.getAddressCard().getLatitude()!=null&&people.getAddressCard().getLongitude()!=null)
+            SLatLng.setText(people.getAddressCard().getAddress() + " ( " + String.valueOf(people.getAddressCard().getLatitude()) +", "+String.valueOf(people.getAddressCard().getLongitude() +" )"));
 //
         folderRef = storageRef.child("photos");
 //        imageRef = folderRef.child("firebase.png");
@@ -493,21 +493,20 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
                 Intent intent2 = new Intent(LocationCard.this, LocationNow.class);
                 //intent.putExtra("data", cardFirebase);
 
-                addressData.setHouseNumber(EHouseNumber.getText().toString());
-                addressData.setMoo(EMoo.getText().toString());
-                addressData.setSoi(ESoi.getText().toString());
-                addressData.setRoad(ERoad.getText().toString());
+                people.getAddressCard().setHouseNumber(EHouseNumber.getText().toString());
+                people.getAddressCard().setMoo(EMoo.getText().toString());
+                people.getAddressCard().setSoi(ESoi.getText().toString());
+                people.getAddressCard().setRoad(ERoad.getText().toString());
 
-                addressData.setProvince(mProvince.getSelectedItem().toString());
-                addressData.setAmphur(mAmphur.getSelectedItem().toString());
-                addressData.setTambon(mTambon.getSelectedItem().toString());
+                people.getAddressCard().setProvince(mProvince.getSelectedItem().toString());
+                people.getAddressCard().setAmphur(mAmphur.getSelectedItem().toString());
+                people.getAddressCard().setTambon(mTambon.getSelectedItem().toString());
 
-                addressData.setPostcode(EPostcode.getText().toString());
+                people.getAddressCard().setPostcode(EPostcode.getText().toString());
 
-                addressData.setLandmark(ELandmark.getText().toString());
-                addressData.setLatitude(latitude);
-                addressData.setLongitude(longitude);
-                people.setAddressCard(addressData);
+                people.getAddressCard().setLandmark(ELandmark.getText().toString());
+
+                //people.setAddressCard(addressData);
                 //Convert to byte array
 
 
@@ -542,21 +541,21 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
         Intent intent2 = new Intent(LocationCard.this, Profile.class);
         //intent.putExtra("data", cardFirebase);
 
-        addressData.setHouseNumber(EHouseNumber.getText().toString());
-        addressData.setMoo(EMoo.getText().toString());
-        addressData.setSoi(ESoi.getText().toString());
-        addressData.setRoad(ERoad.getText().toString());
+        people.getAddressCard().setHouseNumber(EHouseNumber.getText().toString());
+        people.getAddressCard().setMoo(EMoo.getText().toString());
+        people.getAddressCard().setSoi(ESoi.getText().toString());
+        people.getAddressCard().setRoad(ERoad.getText().toString());
 
-        addressData.setProvince(mProvince.getSelectedItem().toString());
-        addressData.setAmphur(mAmphur.getSelectedItem().toString());
-        addressData.setTambon(mTambon.getSelectedItem().toString());
+        people.getAddressCard().setProvince(mProvince.getSelectedItem().toString());
+        people.getAddressCard().setAmphur(mAmphur.getSelectedItem().toString());
+        people.getAddressCard().setTambon(mTambon.getSelectedItem().toString());
 
-        addressData.setPostcode(EPostcode.getText().toString());
+        people.getAddressCard().setPostcode(EPostcode.getText().toString());
 
-        addressData.setLandmark(ELandmark.getText().toString());
-        addressData.setLatitude(latitude);
-        addressData.setLongitude(longitude);
-        people.setAddressCard(addressData);
+        people.getAddressCard().setLandmark(ELandmark.getText().toString());
+
+        //people.setAddressCard(addressData);
+
         //Convert to byte array
 
 
@@ -571,7 +570,7 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
         //Log.d(people.getAddressCard().getLongitude().toString(), "LocationCard: ");
         //uploadFromFile(uri.getPath());
         intent2.putExtra("data", people);
-
+        intent2.putExtra("contactData", contactData);
         intent2.putExtra("PathImgLocationCard",PathImgLocationCard);
 
         startActivity(intent2);
@@ -687,12 +686,12 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
             }
         }
         else if (requestCode == REQUEST_ADDRESS && resultCode == RESULT_OK) {
-                String address = data.getStringExtra("address");
-                latitude = data.getExtras().getDouble("latitude");
-                longitude = data.getExtras().getDouble("longitude");
-                Log.d("latitude",Double.toString(latitude));
-                Log.d("longitude",Double.toString(longitude));
-                SLatLng.setText(address + " (" + latitude + " , " + longitude + " )");
+                people.getAddressCard().setAddress(data.getStringExtra("address"));
+                people.getAddressCard().setLatitude(data.getExtras().getDouble("latitude"));
+                people.getAddressCard().setLongitude(data.getExtras().getDouble("longitude"));
+                Log.d("latitude",Double.toString(people.getAddressCard().getLatitude()));
+                Log.d("longitude",Double.toString(people.getAddressCard().getLongitude()));
+                SLatLng.setText(people.getAddressCard().getAddress() + " (" + people.getAddressCard().getLatitude() + " , " + people.getAddressCard().getLongitude() + " )");
 
         }
     }

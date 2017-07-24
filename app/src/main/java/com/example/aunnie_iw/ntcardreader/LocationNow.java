@@ -72,11 +72,9 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
     private Uri uri;
     private File f;
     private TextView SLatLng;
-    private Double latitude;
-    private Double longitude;
+
     private People people;
     private ContactData contactData;
-    private AddressData addressData;
     private EditText EHouseNumber, EMoo,ESoi,ERoad,ETambon,RAmphur,EProvince,EPostcode,ELandmark,EPhotourl;
     private Spinner mProvince,mAmphur,mTambon;
 
@@ -97,7 +95,7 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
         getSupportActionBar().setTitle(R.string.LocationNow);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //new LocationCard.FeedTask().execute("dataprovince");
-        addressData = new AddressData();
+
         /*------------------- intent ข้อมูล --------------------------------------------------------------------------------------------------*/
         Intent intent = getIntent();
         people = (People) intent.getExtras().getSerializable("data");
@@ -164,8 +162,8 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
             ELandmark.setText(people.getAddressNow().getLandmark());
 
         SLatLng = (TextView) findViewById(R.id.SLatLng);
-        if(people.getAddressNow() !=null && people.getAddressNow().getLatitude()!=null&&people.getAddressNow().getLongitude()!=null)
-            SLatLng.setText("( " + String.valueOf(people.getAddressNow().getLatitude()) +", "+String.valueOf(people.getAddressNow().getLongitude() +" )"));
+        if(people.getAddressNow() !=null && people.getAddressNow().getAddress() != null && people.getAddressNow().getLatitude()!=null&&people.getAddressNow().getLongitude()!=null)
+            SLatLng.setText(people.getAddressNow().getAddress()+ " ( " + String.valueOf(people.getAddressNow().getLatitude()) +", "+String.valueOf(people.getAddressNow().getLongitude() +" )"));
 //
         StorageReference storageRef = FirebaseStorage.getInstance().getReference();
         folderRef = storageRef.child("photos");
@@ -480,20 +478,19 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
                 case R.id.Next:
                     Intent intent2 = new Intent(LocationNow.this, EmergencyContact.class);
                     //intent.putExtra("data", cardFirebase);
-                    addressData.setHouseNumber(EHouseNumber.getText().toString());
-                    addressData.setMoo(EMoo.getText().toString());
-                    addressData.setSoi(ESoi.getText().toString());
-                    addressData.setRoad(ERoad.getText().toString());
+                    people.getAddressNow().setHouseNumber(EHouseNumber.getText().toString());
+                    people.getAddressNow().setMoo(EMoo.getText().toString());
+                    people.getAddressNow().setSoi(ESoi.getText().toString());
+                    people.getAddressNow().setRoad(ERoad.getText().toString());
 
-                    addressData.setProvince(mProvince.getSelectedItem().toString());
-                    addressData.setAmphur(mAmphur.getSelectedItem().toString());
-                    addressData.setTambon(mTambon.getSelectedItem().toString());
+                    people.getAddressNow().setProvince(mProvince.getSelectedItem().toString());
+                    people.getAddressNow().setAmphur(mAmphur.getSelectedItem().toString());
+                    people.getAddressNow().setTambon(mTambon.getSelectedItem().toString());
 
-                    addressData.setPostcode(EPostcode.getText().toString());
-                    addressData.setLandmark(ELandmark.getText().toString());
-                    addressData.setLatitude(latitude);
-                    addressData.setLongitude(longitude);
-                    people.setAddressNow(addressData);
+                    people.getAddressNow().setPostcode(EPostcode.getText().toString());
+                    people.getAddressNow().setLandmark(ELandmark.getText().toString());
+
+                    //people.setAddressNow(addressData);
 //                    Log.d(people.getAddressNow().getHouseNumber(), "LocationNow: ");
 //                    Log.d(people.getAddressNow().getMoo(), "LocationNow: ");
 //                    Log.d(people.getAddressNow().getSoi(), "LocationNowSoi: ");
@@ -519,20 +516,19 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
         super.onBackPressed();
         Intent intent2 = new Intent(LocationNow.this, LocationCard.class);
         //intent.putExtra("data", cardFirebase);
-        addressData.setHouseNumber(EHouseNumber.getText().toString());
-        addressData.setMoo(EMoo.getText().toString());
-        addressData.setSoi(ESoi.getText().toString());
-        addressData.setRoad(ERoad.getText().toString());
+        people.getAddressNow().setHouseNumber(EHouseNumber.getText().toString());
+        people.getAddressNow().setMoo(EMoo.getText().toString());
+        people.getAddressNow().setSoi(ESoi.getText().toString());
+        people.getAddressNow().setRoad(ERoad.getText().toString());
 
-        addressData.setProvince(mProvince.getSelectedItem().toString());
-        addressData.setAmphur(mAmphur.getSelectedItem().toString());
-        addressData.setTambon(mTambon.getSelectedItem().toString());
+        people.getAddressNow().setProvince(mProvince.getSelectedItem().toString());
+        people.getAddressNow().setAmphur(mAmphur.getSelectedItem().toString());
+        people.getAddressNow().setTambon(mTambon.getSelectedItem().toString());
 
-        addressData.setPostcode(EPostcode.getText().toString());
-        addressData.setLandmark(ELandmark.getText().toString());
-        addressData.setLatitude(latitude);
-        addressData.setLongitude(longitude);
-        people.setAddressNow(addressData);
+        people.getAddressNow().setPostcode(EPostcode.getText().toString());
+        people.getAddressNow().setLandmark(ELandmark.getText().toString());
+
+        //people.setAddressNow(addressData);
 //        Log.d(people.getAddressNow().getHouseNumber(), "LocationNow: ");
 //        Log.d(people.getAddressNow().getMoo(), "LocationNow: ");
 //        Log.d(people.getAddressNow().getSoi(), "LocationNowSoi: ");
@@ -542,6 +538,7 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
         //Log.d(people.getAddressCard().getLatitude().toString(), "LocationCard: ");
         //Log.d(people.getAddressCard().getLongitude().toString(), "LocationCard: ");
         intent2.putExtra("data", people);
+        intent2.putExtra("contactData", contactData);
 
         intent2.putExtra("PathImgLocationCard",PathImgLocationCard);
         intent2.putExtra("PathImgLocationNow",PathImgLocationNow);
@@ -655,12 +652,12 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
             }
         }
         else if (requestCode == REQUEST_ADDRESS && resultCode == RESULT_OK) {
-            String address = data.getStringExtra("address");
-            latitude = data.getExtras().getDouble("latitude");
-            longitude = data.getExtras().getDouble("longitude");
-            Log.d("latitude",Double.toString(latitude));
-            Log.d("longitude",Double.toString(longitude));
-            SLatLng.setText(address + " (" + latitude + " , " + longitude + " )");
+            people.getAddressNow().setAddress(data.getStringExtra("address"));
+            people.getAddressNow().setLatitude(data.getExtras().getDouble("latitude"));
+            people.getAddressNow().setLongitude(data.getExtras().getDouble("longitude"));
+            Log.d("latitude",Double.toString(people.getAddressNow().getLatitude()));
+            Log.d("longitude",Double.toString(people.getAddressNow().getLongitude()));
+            SLatLng.setText(people.getAddressNow().getAddress() + " (" + people.getAddressNow().getLatitude() + " , " + people.getAddressNow().getLongitude() + " )");
 
         }
     }
