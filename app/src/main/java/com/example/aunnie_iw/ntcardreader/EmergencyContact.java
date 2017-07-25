@@ -206,6 +206,12 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
         /*------------------- Photo--------------------------------------------------*/
         BSelectPhoto=(Button)findViewById(R.id.BSelectPhoto);
         viewImage=(ImageView)findViewById(R.id.viewImage);
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+        folderRef = storageRef.child("contact");
+        if (picturePath[2].equals("")) {
+            imageRef = folderRef.child(contactData.getCitizenID() + "_Location");
+            downloadInMemory();
+        }
         if(!pictureUri[2].equals("")){
             uri = Uri.parse(pictureUri[2]);
             try {
@@ -627,11 +633,11 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
                 break;
 
             case R.id.Update: {
-                if (picturePath[0] != "")
+                if (!picturePath[0].equals(""))
                     uploadFromFile(picturePath[0],"people",people.getProfileData().getCitizenID() + "_LocationCard");
-                if (picturePath[1] != "")
+                if (!picturePath[1].equals(""))
                     uploadFromFile(picturePath[1],"people",people.getProfileData().getCitizenID() + "_LocationNow");
-                if (picturePath[2] != "")
+                if (!picturePath[2].equals(""))
                     uploadFromFile(picturePath[2],"contact",contactData.getCitizenID() + "_Location");
                 contactData.getAddressData().setHouseNumber(EHouseNumber.getText().toString());
                 contactData.getAddressData().setMoo(EMoo.getText().toString());
@@ -1108,6 +1114,26 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
         });
     }
 
+    private void downloadInMemory() {
+        //long ONE_MEGABYTE = 1024 * 1024;
+        // Helper.showDialog(this);
+        imageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                // Helper.dismissDialog();
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                viewImage.setImageBitmap(bitmap);
+                Log.d("BIT", "onSuccess: ");
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                //Helper.dismissDialog();
+                // mTextView.setText(String.format("Failure: %s", exception.getMessage()));
+                Log.d(exception.getMessage(), "onFailure: ");
+            }
+        });
+    }
 
     public class FeedTask extends AsyncTask<String, Void ,JSONArray> {
         // Asycdialog = new ProgressDialog(LocationCard.this);

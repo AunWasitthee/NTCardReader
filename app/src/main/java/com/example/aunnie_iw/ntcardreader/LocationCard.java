@@ -144,7 +144,12 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
 
         BSelectPhoto = (Button) findViewById(R.id.BSelectPhoto);
         viewImage = (ImageView) findViewById(R.id.viewImage);
-        if(!pictureUri[0].equals("")){
+        folderRef = storageRef.child("people");
+        if (picturePath[0].equals("")) {
+            imageRef = folderRef.child(people.getProfileData().getCitizenID() + "_LocationCard");
+            downloadInMemory();
+        }
+        else if(!pictureUri[0].equals("")){
             try {
                 uri = Uri.parse(pictureUri[0]);
                 bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
@@ -198,12 +203,7 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
         if(people.getAddressCard() !=null && people.getAddressCard().getAddress() !=null && people.getAddressCard().getLatitude()!=null&&people.getAddressCard().getLongitude()!=null)
             SLatLng.setText(people.getAddressCard().getAddress() + " ( " + String.valueOf(people.getAddressCard().getLatitude()) +", "+String.valueOf(people.getAddressCard().getLongitude() +" )"));
 //
-        folderRef = storageRef.child("photos");
-//        imageRef = folderRef.child("firebase.png");
 
-        //StorageReference storageRef = storage.getReference();
-        imageRef = folderRef.child(people.getProfileData().getCitizenID() +"_LocationCard.jpg");
-        downloadInMemory();
         /*------------------- Spinner Province--------------------------------------------------------------------------------------------------*/
         mProvince = (Spinner) findViewById(R.id.Province);
 

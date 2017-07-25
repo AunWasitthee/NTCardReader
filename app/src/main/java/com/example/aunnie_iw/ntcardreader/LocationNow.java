@@ -126,7 +126,13 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
 
         BSelectPhoto=(Button)findViewById(R.id.BSelectPhoto);
         viewImage=(ImageView)findViewById(R.id.viewImage);
-        if(!pictureUri[1].equals("")){
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+        folderRef = storageRef.child("people");
+        if (picturePath[1].equals("")) {
+            imageRef = folderRef.child(people.getProfileData().getCitizenID() + "_LocationNow");
+            downloadInMemory();
+        }
+        else if(!pictureUri[1].equals("")){
             uri = Uri.parse(pictureUri[1]);
             try {
                 locationNowBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
@@ -177,13 +183,7 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
         if(people.getAddressNow() !=null && people.getAddressNow().getAddress() != null && people.getAddressNow().getLatitude()!=null&&people.getAddressNow().getLongitude()!=null)
             SLatLng.setText(people.getAddressNow().getAddress()+ " ( " + String.valueOf(people.getAddressNow().getLatitude()) +", "+String.valueOf(people.getAddressNow().getLongitude() +" )"));
 //
-        StorageReference storageRef = FirebaseStorage.getInstance().getReference();
-        folderRef = storageRef.child("photos");
-//        imageRef = folderRef.child("firebase.png");
 
-        //StorageReference storageRef = storage.getReference();
-        imageRef = folderRef.child(people.getProfileData().getCitizenID() +"_LocationNow.jpg");
-        downloadInMemory();
 
 
 
