@@ -59,8 +59,6 @@ import java.util.List;
 public class LocationNow extends AppCompatActivity implements View.OnClickListener {
     private ImageView viewImage;
     private Button BSelectPhoto;
-    private Bitmap bitmap;
-    private Bitmap ImgLocationCard;
     public static final int MY_PERMISSIONS_REQUEST_STORED = 90;
     public static final int MY_PERMISSIONS_REQUEST_CAMERA = 98;
 
@@ -75,6 +73,9 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
 
     private People people;
     private ContactData contactData;
+    private String[] picturePath;
+    private String[] pictureUri;
+    private Bitmap locationNowBitmap;
     private EditText EHouseNumber, EMoo,ESoi,ERoad,ETambon,RAmphur,EProvince,EPostcode,ELandmark,EPhotourl;
     private Spinner mProvince,mAmphur,mTambon;
 
@@ -84,7 +85,6 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
     private static final int REQUEST_PERMISSION_SETTING = 101;
     private boolean sentToSettings = false;
     private SharedPreferences permissionStatus;
-    private String PathImgLocationCard,PathImgLocationNow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,8 +100,8 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
         Intent intent = getIntent();
         people = (People) intent.getExtras().getSerializable("data");
         contactData = (ContactData) intent.getExtras().getSerializable("contactData");
-        PathImgLocationCard = getIntent().getExtras().getString("PathImgLocationCard");
-
+        picturePath = intent.getStringArrayExtra("picturePath");
+        pictureUri = intent.getStringArrayExtra("pictureUri");
 
         permissionStatus = getSharedPreferences("permissionStatus",MODE_PRIVATE);
 
@@ -126,6 +126,18 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
 
         BSelectPhoto=(Button)findViewById(R.id.BSelectPhoto);
         viewImage=(ImageView)findViewById(R.id.viewImage);
+        if(!pictureUri[1].equals("")){
+            uri = Uri.parse(pictureUri[1]);
+            try {
+                locationNowBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
+                locationNowBitmap = RotateImg.Rotate(picturePath[1],locationNowBitmap);
+                //Log.d(f.getPath(), "onActivityResult: Path");
+                //picturePath[1]  = uri.getPath();
+                viewImage.setImageBitmap(locationNowBitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         BSelectPhoto.setOnClickListener(LocationNow.this);
         /*------------------- TextView Next --------------------------------------------------------------------------------------------------*/
         TextView Next = (TextView) findViewById(R.id.Next);
@@ -501,8 +513,8 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
                     //Log.d(people.getAddressCard().getLongitude().toString(), "LocationCard: ");
                     intent2.putExtra("data", people);
                     intent2.putExtra("contactData",contactData);
-                    intent2.putExtra("PathImgLocationCard",PathImgLocationCard);
-                    intent2.putExtra("PathImgLocationNow",PathImgLocationNow);
+                    intent2.putExtra("picturePath",picturePath);
+                    intent2.putExtra("pictureUri",pictureUri);
                     startActivity(intent2);
                     finish();
                     break;
@@ -539,9 +551,8 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
         //Log.d(people.getAddressCard().getLongitude().toString(), "LocationCard: ");
         intent2.putExtra("data", people);
         intent2.putExtra("contactData", contactData);
-
-        intent2.putExtra("PathImgLocationCard",PathImgLocationCard);
-        intent2.putExtra("PathImgLocationNow",PathImgLocationNow);
+        intent2.putExtra("picturePath",picturePath);
+        intent2.putExtra("pictureUri",pictureUri);
         startActivity(intent2);
         Log.e("onPressBack","Hello World3");
         finish();
@@ -613,17 +624,17 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
         Log.d("onActivityResult", "onActivityResult: ");
         if (requestCode == REQUEST_GALLERY && resultCode == RESULT_OK) {
             uri = data.getData();
-
-            PathImgLocationNow = Helper.getPath(this, Uri.parse(data.getData().toString()));
+            pictureUri[1] = uri.toString();
+            picturePath[1]  = Helper.getPath(this, Uri.parse(data.getData().toString()));
             //File imageFile = new File(getRealPathFromURI(uri));
             Log.d(uri.toString(), "onActivityResult: ");
             Log.d(uri.getPath(), "onActivityResult: ");
-            Log.d(PathImgLocationNow, "onActivityResult: ");
+            Log.d(picturePath[1], "onActivityResult: ");
             try {
-                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
-                bitmap= RotateImg.Rotate(PathImgLocationNow,bitmap);
+                locationNowBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),uri);
+                locationNowBitmap= RotateImg.Rotate(picturePath[1],locationNowBitmap);
                 Log.d("bitmap", "onActivityResult: ");
-                viewImage.setImageBitmap(bitmap);
+                viewImage.setImageBitmap(locationNowBitmap);
             } catch (FileNotFoundException e) {
                 Log.d("FileNotFoundException", "onActivityResult: ");
                 e.printStackTrace();
@@ -633,18 +644,15 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
             }
         }
         else if (requestCode == REQUEST_CAMERA && resultCode == RESULT_OK){
-
             getContentResolver().notifyChange(uri, null);
             ContentResolver cr = getContentResolver();
-
-
             try {
-
-                bitmap = MediaStore.Images.Media.getBitmap(cr, uri);
-                bitmap = RotateImg.Rotate(uri.getPath(),bitmap);
+                locationNowBitmap = MediaStore.Images.Media.getBitmap(cr, uri);
+                locationNowBitmap = RotateImg.Rotate(uri.getPath(),locationNowBitmap);
                 //Log.d(f.getPath(), "onActivityResult: Path");
-                PathImgLocationNow = uri.getPath();
-                viewImage.setImageBitmap(bitmap);
+                pictureUri[1] = uri.toString();
+                picturePath[1] =uri.getPath();
+                viewImage.setImageBitmap(locationNowBitmap);
                 Toast.makeText(getApplicationContext()
                         , uri.getPath(), Toast.LENGTH_SHORT).show();
             } catch (Exception e) {

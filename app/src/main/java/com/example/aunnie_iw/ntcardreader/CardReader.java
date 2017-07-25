@@ -15,6 +15,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -38,6 +39,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.ByteArrayOutputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,6 +81,9 @@ public class CardReader extends Activity implements View.OnClickListener {
     /*-----------------Permission----------------------------*/
     private SharedPreferences permissionStatus;
     private boolean sentToSettings = false;
+    private String[] picturePath;
+    private String[] pictureUri;
+//    private Bitmap[] pictureBitmap;
     /*-------------------------------------------------------------*/
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,6 +129,13 @@ public class CardReader extends Activity implements View.OnClickListener {
 //        Img=(ImageView) findViewById(R.id.imageView1);
         people = new People();
         contactData = new ContactData();
+        picturePath = new String[3];
+        pictureUri = new String[3];
+//        pictureBitmap = new Bitmap[3];
+        for(int i=0 ; i<3 ; i++) {
+            pictureUri[i]  = "";
+            picturePath[i] = "";
+        }
     }
 
     @SuppressLint("NewApi")
@@ -274,6 +286,8 @@ public class CardReader extends Activity implements View.OnClickListener {
                     Intent intent = new Intent(CardReader.this, Profile.class);
                     intent.putExtra("data", people);
                     intent.putExtra("contactData", contactData);
+                    intent.putExtra("picturePath",picturePath);
+                    intent.putExtra("pictureUri",pictureUri);
                     startActivity(intent);
                 } else if (card != null) {
                     try {
@@ -313,6 +327,12 @@ public class CardReader extends Activity implements View.OnClickListener {
                         Intent intent = new Intent(CardReader.this, Profile.class);
                         intent.putExtra("data", people);
                         intent.putExtra("contactData", contactData);
+                        intent.putExtra("picturePath",picturePath);
+                        intent.putExtra("pictureUri",pictureUri);
+//                        intent.putExtra("pictureBitmap",pictureBitmap);
+//                        for(int i = 0; i<3 ; i++)
+//                            intent.putExtra("pictureUri"+i,pictureUri[i].toString());
+//                            intent.putExtra("pictureBitmap"+i,pictureBitmap[i]);
                         startActivity(intent);
                     } catch (Exception e) {
                         //textView.setText(e.getMessage() + "" );

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.Uri;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -73,6 +74,8 @@ public class Profile extends AppCompatActivity implements MultiSelectionSpinner.
     private ContactData contactData;
     private ProfileData profileData;
     private DisabilityData disabilityData;
+    private String[] picturePath;
+    private String[] pictureUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +96,9 @@ public class Profile extends AppCompatActivity implements MultiSelectionSpinner.
         Intent intent = getIntent();
         people = (People) intent.getExtras().getSerializable("data");
         contactData = (ContactData) intent.getExtras().getSerializable("contactData");
+        picturePath = intent.getStringArrayExtra("picturePath");
+        pictureUri = intent.getStringArrayExtra("pictureUri");
+
         Log.d("onCreate: ",contactData.getCitizenID());
         Log.d("5555555555", people.getProfileData().getCitizenID());
         Bitmap pic = stringToBitMap(people.getProfileData().getImg());
@@ -573,6 +579,8 @@ public class Profile extends AppCompatActivity implements MultiSelectionSpinner.
                 Log.d(people.getProfileData().getAlive(), "onClick: ");
                 intent.putExtra("data", people);
                 intent.putExtra("contactData",contactData);
+                intent.putExtra("picturePath",picturePath);
+                intent.putExtra("pictureUri",pictureUri);
                 startActivity(intent);
                 finish();
                 break;

@@ -68,8 +68,6 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
 
     private ImageView viewImage;
     private Button BSelectPhoto;
-    private Bitmap bitmap;
-    private Bitmap ImgLocationCard;
     public static final int MY_PERMISSIONS_REQUEST_STORED = 90;
     public static final int MY_PERMISSIONS_REQUEST_CAMERA = 98;
 
@@ -87,9 +85,10 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
     private StorageReference folderRef, imageRef;
     private Spinner mRelationship,mSex;
     private People people;
-
-
     private ContactData contactData;
+    private String[] picturePath;
+    private String[] pictureUri;
+    private Bitmap emergencyContactBitmap;
     private String contactID;
     private String peopleKey;
     private EditText ECitizenID, ETitleTH,EFirstName ,ELastName,ETell,EHomeTell, EHouseNumber, EMoo,ESoi,ERoad,ETambon,RAmphur,EProvince,EPostcode,ELandmark,ELatitude,ELongtitude,EPhotourl;
@@ -102,7 +101,6 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
     private boolean sentToSettings = false;
     private SharedPreferences permissionStatus;
 
-    private String PathImgLocationCard,PathImgLocationNow,PathImgLocationEmergency;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,12 +123,12 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
         people = (People) intent.getExtras().getSerializable("data");
         contactData = (ContactData) intent.getExtras().getSerializable("contactData");
         permissionStatus = getSharedPreferences("permissionStatus",MODE_PRIVATE);
-        PathImgLocationCard = getIntent().getExtras().getString("PathImgLocationCard");
-        PathImgLocationNow = getIntent().getExtras().getString("PathImgLocationNow");
+        picturePath = intent.getStringArrayExtra("picturePath");
+        pictureUri =  intent.getStringArrayExtra("pictureUri");
 
 
-        Log.d(PathImgLocationCard, "PathImgLocationCard ");
-        Log.d(PathImgLocationNow, "PathImgLocationNow");
+        Log.d(picturePath[0], "PathImgLocationCard ");
+        Log.d(picturePath[1], "PathImgLocationNow");
 
 
         Log.d(people.getAddressNow().getHouseNumber(), "LocationNow: ");
@@ -208,6 +206,18 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
         /*------------------- Photo--------------------------------------------------*/
         BSelectPhoto=(Button)findViewById(R.id.BSelectPhoto);
         viewImage=(ImageView)findViewById(R.id.viewImage);
+        if(!pictureUri[2].equals("")){
+            uri = Uri.parse(pictureUri[2]);
+            try {
+                emergencyContactBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
+                emergencyContactBitmap = RotateImg.Rotate(picturePath[2],emergencyContactBitmap);
+                //Log.d(f.getPath(), "onActivityResult: Path");
+                //picturePath[2]  = uri.getPath();
+                viewImage.setImageBitmap(emergencyContactBitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         BSelectPhoto.setOnClickListener(EmergencyContact.this);
             /*------------------- TextView Update --------------------------------------------------------------------------------------------------*/
             TextView Update = (TextView) findViewById(R.id.Update);
@@ -590,7 +600,6 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View v, int i, long l)
             {
-
                 TextView myText = (TextView) v;
                 Toast.makeText(EmergencyContact.this, "You Selected "+myText.getText(), Toast.LENGTH_SHORT).show();
                 ((TextView) adapterView.getChildAt(0)).setTextSize(14);
@@ -691,10 +700,8 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
                     people.setContactID(contactID);
                 }
                 else if (people.getContactID() == null){
-
                     contactID = myRef.child("EmergencyContact").push().getKey();
                     people.setContactID(contactID);
-
                 }
                     myRef.child("EmergencyContact").child(people.getContactID()).setValue(contactData);
                     myRef.child("Peoplee").child(people.getPeopleKey()).setValue(people);
@@ -729,6 +736,8 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
         people.setContactID(contactID);
         intent2.putExtra("contactData", contactData);
         intent2.putExtra("data", people);
+        intent2.putExtra("picturePath",picturePath);
+        intent2.putExtra("pictureUri",pictureUri);
         startActivity(intent2);
         Log.e("onPressBack","Hello World4");
         finish();
@@ -800,17 +809,17 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
         Log.d("onActivityResult", "onActivityResult: ");
         if (requestCode == REQUEST_GALLERY && resultCode == RESULT_OK) {
             uri = data.getData();
-
-            PathImgLocationEmergency = Helper.getPath(this, Uri.parse(data.getData().toString()));
+            pictureUri[2] = uri.toString();
+            picturePath[2] = Helper.getPath(this, Uri.parse(data.getData().toString()));
             //File imageFile = new File(getRealPathFromURI(uri));
             Log.d(uri.toString(), "onActivityResult: ");
             Log.d(uri.getPath(), "onActivityResult: ");
-            Log.d(PathImgLocationEmergency, "onActivityResult: ");
+            Log.d(picturePath[2], "onActivityResult: ");
             try {
-                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
-                bitmap= RotateImg.Rotate(PathImgLocationEmergency,bitmap);
-                Log.d("bitmap", "onActivityResult: ");
-                viewImage.setImageBitmap(bitmap);
+                emergencyContactBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
+                emergencyContactBitmap= RotateImg.Rotate(picturePath[2],emergencyContactBitmap);
+                Log.d("pictureBitmap[2]", "onActivityResult: ");
+                viewImage.setImageBitmap(emergencyContactBitmap);
             } catch (FileNotFoundException e) {
                 Log.d("FileNotFoundException", "onActivityResult: ");
                 e.printStackTrace();
@@ -827,11 +836,12 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
 
             try {
 
-                bitmap = MediaStore.Images.Media.getBitmap(cr, uri);
-                bitmap = RotateImg.Rotate(uri.getPath(),bitmap);
+                emergencyContactBitmap = MediaStore.Images.Media.getBitmap(cr, uri);
+                emergencyContactBitmap = RotateImg.Rotate(uri.getPath(),emergencyContactBitmap);
                 //Log.d(f.getPath(), "onActivityResult: Path");
-                PathImgLocationEmergency = uri.getPath();
-                viewImage.setImageBitmap(bitmap);
+                pictureUri[2] = uri.toString();
+                picturePath[2] = uri.getPath();
+                viewImage.setImageBitmap(emergencyContactBitmap);
                 Toast.makeText(getApplicationContext()
                         , uri.getPath(), Toast.LENGTH_SHORT).show();
             } catch (Exception e) {

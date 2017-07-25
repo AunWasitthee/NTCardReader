@@ -76,7 +76,6 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
     private Button BSelectPhoto;
     public static final int MY_PERMISSIONS_REQUEST_STORED = 90;
     public static final int MY_PERMISSIONS_REQUEST_CAMERA = 98;
-    private Bitmap ImgLocationCard;
     public static final int REQUEST_GALLERY = 1;
     public static final int REQUEST_CAMERA = 2;
     public static final int REQUEST_ADDRESS = 3;
@@ -87,7 +86,9 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
 
     private People people;
     private ContactData contactData;
-
+    private String[] picturePath;
+    private Bitmap bitmap;
+    private String[] pictureUri;
     private EditText EHouseNumber, EMoo,ESoi,ERoad,EPostcode,ELandmark,EPhotourl;
     private Spinner mProvince,mAmphur,mTambon;
 
@@ -97,7 +98,6 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
     private boolean sentToSettings = false;
     private SharedPreferences permissionStatus;
 
-    private String PathImgLocationCard;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +119,9 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
         Intent intent = getIntent();
         people = (People) intent.getExtras().getSerializable("data");
         contactData = (ContactData) intent.getExtras().getSerializable("contactData");
+        picturePath = intent.getStringArrayExtra("picturePath");
+        pictureUri = intent.getStringArrayExtra("pictureUri");
+//        pictureBitmap = (Bitmap[]) intent.getParcelableArrayExtra("pictureBitmap");
 
         Log.d(people.getProfileData().getPrefixThai(), "LocationCard: ");
         Log.d(people.getProfileData().getFirstNameThai(), "LocationCard: ");
@@ -141,6 +144,19 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
 
         BSelectPhoto = (Button) findViewById(R.id.BSelectPhoto);
         viewImage = (ImageView) findViewById(R.id.viewImage);
+        if(!pictureUri[0].equals("")){
+            try {
+                uri = Uri.parse(pictureUri[0]);
+                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
+                bitmap = RotateImg.Rotate(picturePath[0],bitmap);
+                //Log.d(f.getPath(), "onActivityResult: Path");
+                //picturePath[0]  = uri.getPath();
+                viewImage.setImageBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         BSelectPhoto.setOnClickListener(LocationCard.this);
 
         /*------------------- TextView Next--------------------------------------------------------------------------------------------------*/
@@ -522,8 +538,8 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
                 //uploadFromFile(uri.getPath());
                 intent2.putExtra("data", people);
                 intent2.putExtra("contactData",contactData);
-
-                intent2.putExtra("PathImgLocationCard",PathImgLocationCard);
+                intent2.putExtra("picturePath",picturePath);
+                intent2.putExtra("pictureUri",pictureUri);
 
                 startActivity(intent2);
                 finish();
@@ -571,8 +587,8 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
         //uploadFromFile(uri.getPath());
         intent2.putExtra("data", people);
         intent2.putExtra("contactData", contactData);
-        intent2.putExtra("PathImgLocationCard",PathImgLocationCard);
-
+        intent2.putExtra("picturePath",picturePath);
+        intent2.putExtra("pictureUri",pictureUri);
         startActivity(intent2);
         Log.e("onPressBack","Hello World2");
         finish();
@@ -645,19 +661,19 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
         Log.d("onActivityResult", "onActivityResult: ");
         if (requestCode == REQUEST_GALLERY && resultCode == RESULT_OK) {
             uri = data.getData();
-
-            PathImgLocationCard = Helper.getPath(this, Uri.parse(data.getData().toString()));
+            pictureUri[0] = uri.toString();
+            picturePath[0] = Helper.getPath(this, Uri.parse(data.getData().toString()));
             //uploadFromFile(PathImgLocationCard);
             //File imageFile = new File(getRealPathFromURI(uri));
             Log.d(uri.toString(), "onActivityResult: ");
             Log.d(uri.getPath(), "onActivityResult: ");
-            Log.d(PathImgLocationCard, "onActivityResult: ");
+            Log.d(picturePath[0] , "onActivityResult: ");
             try {
-                ImgLocationCard = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
-                ImgLocationCard= RotateImg.Rotate(PathImgLocationCard,ImgLocationCard);
+                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),uri);
+                bitmap= RotateImg.Rotate(picturePath[0] ,bitmap);
                 Log.d("bitmap", "onActivityResult: ");
                 //uploadFromDataInMemory(bitmap);
-                viewImage.setImageBitmap(ImgLocationCard);
+                viewImage.setImageBitmap(bitmap);
             } catch (FileNotFoundException e) {
                 Log.d("FileNotFoundException", "onActivityResult: ");
                 e.printStackTrace();
@@ -674,11 +690,12 @@ public class LocationCard extends AppCompatActivity implements View.OnClickListe
 
             try {
 
-                ImgLocationCard = MediaStore.Images.Media.getBitmap(cr, uri);
-                ImgLocationCard = RotateImg.Rotate(uri.getPath(),ImgLocationCard);
+                bitmap = MediaStore.Images.Media.getBitmap(cr, uri);
+                bitmap= RotateImg.Rotate(uri.getPath(),bitmap);
                 //Log.d(f.getPath(), "onActivityResult: Path");
-                PathImgLocationCard = uri.getPath();
-                viewImage.setImageBitmap(ImgLocationCard);
+                pictureUri[0] = uri.toString();
+                picturePath[0]  = uri.getPath();
+                viewImage.setImageBitmap(bitmap);
                 Toast.makeText(getApplicationContext()
                         , uri.getPath(), Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
