@@ -581,9 +581,9 @@ public class LocationNow extends AppCompatActivity implements View.OnClickListen
 
 
                         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        String timeStamp =
-                                new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-                        String imageFileName = "IMG_" + timeStamp + ".jpg";
+//                        String timeStamp =
+//                                new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                        String imageFileName = people.getProfileData().getCitizenID() + "_LocationNow" + ".jpg";
                         f = new File(Environment.getExternalStorageDirectory()
                                 , "DCIM/Camera/" + imageFileName);
                         uri = Uri.fromFile(f);

@@ -627,6 +627,12 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
                 break;
 
             case R.id.Update: {
+                if (picturePath[0] != "")
+                    uploadFromFile(picturePath[0],"people",people.getProfileData().getCitizenID() + "_LocationCard");
+                if (picturePath[1] != "")
+                    uploadFromFile(picturePath[1],"people",people.getProfileData().getCitizenID() + "_LocationNow");
+                if (picturePath[2] != "")
+                    uploadFromFile(picturePath[2],"contact",contactData.getCitizenID() + "_Location");
                 contactData.getAddressData().setHouseNumber(EHouseNumber.getText().toString());
                 contactData.getAddressData().setMoo(EMoo.getText().toString());
                 contactData.getAddressData().setSoi(ESoi.getText().toString());
@@ -766,9 +772,9 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
 
 
                         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        String timeStamp =
-                                new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-                        String imageFileName = "IMG_" + timeStamp + ".jpg";
+//                        String timeStamp =
+//                                new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                        String imageFileName = contactData.getCitizenID() + "_Location" + ".jpg";
                         f = new File(Environment.getExternalStorageDirectory()
                                 , "DCIM/Camera/" + imageFileName);
                         uri = Uri.fromFile(f);
@@ -1074,13 +1080,32 @@ public class EmergencyContact extends AppCompatActivity implements View.OnClickL
         }
     }
 
-    private void uploadFromFile(String path) {
+    private void uploadFromFile(String path, String child, String name) {
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference();
+        folderRef = storageRef.child(child);
+        imageRef = folderRef.child(name);
         Uri file = Uri.fromFile(new File(path));
         //StorageReference imageRef = folderRef.child(file.getLastPathSegment());
         //StorageMetadata metadata = new StorageMetadata.Builder().setContentType("image/jpg").build();
         //UploadTask uploadTask = imageRef.putFile(file, metadata);
-        imageRef.putFile(file);
-
+        //imageRef.putFile(file);
+        mUploadTask = imageRef.putFile(file);
+        mUploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                Log.d("onFailure: ", "FAIL");
+//                Helper.dismissProgressDialog();
+//                mTextView.setText(String.format("Failure: %s", exception.getMessage()));
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Log.d("onFailure: ", "Success");
+//                Helper.dismissProgressDialog();
+//                findViewById(R.id.button_upload_resume).setVisibility(View.GONE);
+//                mTextView.setText(taskSnapshot.getDownloadUrl().toString());
+            }
+        });
     }
 
 
